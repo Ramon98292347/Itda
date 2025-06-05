@@ -19,6 +19,7 @@ const Login = () => {
   const [registerEmail, setRegisterEmail] = useState('');
   const [registerName, setRegisterName] = useState('');
   const [registerRole, setRegisterRole] = useState('');
+  const [registerPassword, setRegisterPassword] = useState('');
   const [permissionPassword, setPermissionPassword] = useState('');
   const [isRegisterDialogOpen, setIsRegisterDialogOpen] = useState(false);
 
@@ -79,7 +80,7 @@ const Login = () => {
       return;
     }
 
-    if (!registerEmail || !registerName || !registerRole) {
+    if (!registerEmail || !registerName || !registerRole || !registerPassword) {
       toast({
         title: "Erro no cadastro",
         description: "Preencha todos os campos",
@@ -88,26 +89,33 @@ const Login = () => {
       return;
     }
 
+    if (registerPassword.length < 6) {
+      toast({
+        title: "Erro no cadastro",
+        description: "A senha deve ter pelo menos 6 caracteres",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
-      // Gerar uma senha aleatória para o novo usuário
-      const tempPassword = Math.random().toString(36).slice(-8);
-      
       await register(
         registerEmail,
-        tempPassword,
+        registerPassword,
         registerName,
         registerRole as 'admin' | 'professor'
       );
 
       toast({
         title: "Usuário cadastrado",
-        description: `${registerRole === 'admin' ? 'Administrador' : 'Professor'} cadastrado com sucesso. Senha temporária: ${tempPassword}`,
+        description: `${registerRole === 'admin' ? 'Administrador' : 'Professor'} cadastrado com sucesso!`,
       });
 
       // Limpar formulário
       setRegisterEmail('');
       setRegisterName('');
       setRegisterRole('');
+      setRegisterPassword('');
       setPermissionPassword('');
       
       // Adicionar um pequeno atraso antes de fechar o diálogo
@@ -316,6 +324,17 @@ const Login = () => {
                         <SelectItem value="professor">Professor</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Senha</label>
+                    <Input
+                      type="password"
+                      value={registerPassword}
+                      onChange={(e) => setRegisterPassword(e.target.value)}
+                      placeholder="Digite a senha do usuário"
+                      required
+                      minLength={6}
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">Senha de Permissão</label>
