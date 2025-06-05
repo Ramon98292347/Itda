@@ -131,35 +131,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const register = async (email: string, password: string, name: string, role: UserRole): Promise<boolean> => {
     try {
-      // Registrar usuário no Auth
+      // Primeiro, verificar se o usuário já existe
+      const { data: existingUser } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('email', email)
+        .single();
+
+      if (existingUser) {
+        console.error('Usuário já existe com este email:', email);
+        throw new Error('Este email já está cadastrado no sistema');
+      }
+
+      // Registrar usuário no Auth com metadados
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            name,
+            role
+          }
+        }
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes('User already registered')) {
+          throw new Error('Este email já está cadastrado no sistema');
+        }
+        throw error;
+      }
 
       if (data.user) {
-        // Criar perfil na tabela profiles
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([
-            {
-              id: data.user.id,
-              email,
-              name,
-              role,
-            },
-          ]);
-
-        if (profileError) throw profileError;
-
+        // O trigger do Supabase criará automaticamente o perfil
+        // Não precisamos inserir manualmente na tabela profiles
+        console.log('Usuário registrado com sucesso:', data.user.id);
         return true;
       }
       return false;
     } catch (error) {
       console.error('Erro no registro:', error);
-      return false;
+      // Re-throw the error so it can be caught by the calling function
+      throw error;
     }
   };
 

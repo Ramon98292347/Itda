@@ -92,36 +92,32 @@ const Login = () => {
       // Gerar uma senha aleatória para o novo usuário
       const tempPassword = Math.random().toString(36).slice(-8);
       
-      const success = await register(
+      await register(
         registerEmail,
         tempPassword,
         registerName,
         registerRole as 'admin' | 'professor'
       );
 
-      if (success) {
-        toast({
-          title: "Usuário cadastrado",
-          description: `${registerRole === 'admin' ? 'Administrador' : 'Professor'} cadastrado com sucesso. Senha temporária: ${tempPassword}`,
-        });
+      toast({
+        title: "Usuário cadastrado",
+        description: `${registerRole === 'admin' ? 'Administrador' : 'Professor'} cadastrado com sucesso. Senha temporária: ${tempPassword}`,
+      });
 
-        // Limpar formulário
-        setRegisterEmail('');
-        setRegisterName('');
-        setRegisterRole('');
-        setPermissionPassword('');
+      // Limpar formulário
+      setRegisterEmail('');
+      setRegisterName('');
+      setRegisterRole('');
+      setPermissionPassword('');
+      
+      // Adicionar um pequeno atraso antes de fechar o diálogo
+      setTimeout(() => {
         setIsRegisterDialogOpen(false);
-      } else {
-        toast({
-          title: "Erro no cadastro",
-          description: "Não foi possível cadastrar o usuário",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
+      }, 100);
+    } catch (error: any) {
       toast({
         title: "Erro no cadastro",
-        description: "Ocorreu um erro ao cadastrar o usuário",
+        description: error.message || "Ocorreu um erro ao cadastrar o usuário",
         variant: "destructive",
       });
     }
